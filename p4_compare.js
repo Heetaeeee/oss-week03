@@ -39,8 +39,31 @@ if (names.length === 0) {
   process.exit(1);
 }
 
-// TODO:
-//   1. names.map(async (name) => { ... })  — 이름마다 geocode → forecast, { city, max } 를 돌려주는 Promise
-//   2. const results = await Promise.allSettled(...)
-//   3. fulfilled / rejected 로 나눔
-//   4. max 내림차순 정렬 → `${i + 1}. ${city.padEnd(8)} ${max.toFixed(1)}` → 실패는 `✗ ${name}: ${message}`
+const jobs = names.map(async (name) => {
+  const place = await geocode(name);
+  const fc = await forecast(place);
+  return { city: place.name, max: fc.days[0].max };
+});
+
+const results = await Promise.allSettled(jobs);
+
+const ok = [];
+const failed = [];
+
+results.forEach((r, i) => {
+  if (r.status === "fulfilled") {
+    ok.push(r.value);
+  } else {
+    failed.push({ name: names[i], message: r.reason.message });
+  }
+});
+
+ok.sort((a, b) => b.max - a.max);
+
+ok.forEach((r, i) => {
+  console.log(`${i + 1}. ${r.city.padEnd(8)} ${r.max.toFixed(1)}`);
+});
+
+failed.forEach((f) => {
+  console.log(`✗ ${f.name}: ${f.message}`);
+});
