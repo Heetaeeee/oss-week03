@@ -41,7 +41,8 @@ sleep(10).then(() => console.log("F"));
 
 console.log("G");
 
-// prediction:
-// actual:
+// prediction: ADGCEFB
+// actual:ADGCFEB
 // why I was wrong (one line per miss):
+// sleep(10)이 sleep(30)보다 delay가 짧아서 타이머가 먼저 만료됨 → F가 E보다 먼저 실행되는데, await 순서만 보고 delay 크기 비교를 안 해서 틀림
 //
